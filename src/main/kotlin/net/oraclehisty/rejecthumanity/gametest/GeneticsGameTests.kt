@@ -129,10 +129,10 @@ object GeneticsGameTests {
         val attacker = helper.spawn(EntityType.ZOMBIE, BlockPos(1, 1, 1))
         attacker.isNoAi = true
         helper.runAfterDelay(5) { drow.hurt(helper.level.damageSources().mobAttack(attacker), 1f) }
-        helper.runAfterDelay(45) {
-            helper.assertTrue(drowAlly.target === attacker, "Drow did not rally its own faction")
+        // Goals don't run every tick, so wait for the rally rather than checking at a fixed tick.
+        helper.succeedWhen {
             helper.assertTrue(elf.target == null, "Elf was rallied by a Drow")
-            helper.succeed()
+            helper.assertTrue(drowAlly.target === attacker, "Drow did not rally its own faction")
         }
     }
 

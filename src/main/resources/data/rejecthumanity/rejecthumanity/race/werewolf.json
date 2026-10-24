@@ -443,6 +443,9 @@
         },
         "factor": 0.95
       }
-    ]
+    ],
+    "baby": {
+      "model": "rejecthumanity:werewolf_pup"
+    }
   }
 }
