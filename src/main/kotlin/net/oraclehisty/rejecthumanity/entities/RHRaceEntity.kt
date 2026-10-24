@@ -1,8 +1,10 @@
 package net.oraclehisty.rejecthumanity.entities
 
+import net.minecraft.core.RegistryAccess
 import net.minecraft.nbt.CompoundTag
 import net.minecraft.nbt.NbtOps
 import net.minecraft.network.syncher.EntityDataAccessor
+import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
@@ -41,6 +43,8 @@ import net.oraclehisty.rejecthumanity.genetics.Phenotype
 import net.oraclehisty.rejecthumanity.genetics.RHDataSerializers
 import net.oraclehisty.rejecthumanity.helpers.id
 import net.oraclehisty.rejecthumanity.race.Appearance
+import net.oraclehisty.rejecthumanity.race.Growth
+import net.oraclehisty.rejecthumanity.race.LifeStage
 import net.oraclehisty.rejecthumanity.race.RaceDefinition
 import net.oraclehisty.rejecthumanity.race.RaceRegistry
 import net.oraclehisty.rejecthumanity.race.Temperament
@@ -65,7 +69,16 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
     /** Client-side spring state for jiggle bone rules; never saved or synced. */
     val softBody = SoftBody()
 
-    val race: RaceDefinition? get() = RaceRegistry.get(level().registryAccess(), raceKey)
+    // Datapack registries are fixed for a RegistryAccess (they only change with a new world/connection), so the
+    // lookup is cached per access; rendering asks for it many times a frame.
+    private var raceCache: Pair<RegistryAccess, RaceDefinition?>? = null
+
+    val race: RaceDefinition?
+        get() {
+            val access = level().registryAccess()
+            raceCache?.let { (cachedFor, race) -> if (cachedFor === access) return race }
+            return RaceRegistry.get(access, raceKey).also { raceCache = access to it }
+        }
     val appearance: Appearance? get() = race?.appearance
 
     /** Stable per-individual seed for cosmetic choices that are not genes (e.g. which vitiligo patch texture). */
@@ -77,6 +90,24 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
 
     var phenotype: Phenotype = Phenotype.EMPTY
         private set
+
+    // --- Growth ---------------------------------------------------------------------------------
+
+    val growth: Growth get() = race?.growth ?: Growth.DEFAULT
+
+    /** Synced to clients (vanilla only syncs "is baby"), so models, layers and hitboxes can follow it. */
+    val lifeStage: LifeStage get() = LifeStage.byId(entityData.get(STAGE))
+
+    /** Newborns start young enough to pass through both the baby and the teen stage. */
+    override fun setBaby(baby: Boolean) = setAge(if (baby) growth.newbornAge else 0)
+
+    // Vanilla calls this every tick while young (counting up to 0), on load, and when fed.
+    override fun setAge(age: Int) {
+        super.setAge(age)
+        if (!level().isClientSide) entityData.set(STAGE, growth.stageAt(age).ordinal)
+    }
+
+    override fun getAgeScale() = growth.scaleOf(lifeStage)
 
     fun rerollGenome() {
         val race = race ?: return
@@ -95,11 +126,13 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
     override fun defineSynchedData(builder: SynchedEntityData.Builder) {
         super.defineSynchedData(builder)
         builder.define(GENOME, Genome.EMPTY)
+        builder.define(STAGE, LifeStage.ADULT.ordinal)
     }
 
     override fun onSyncedDataUpdated(key: EntityDataAccessor<*>) {
         super.onSyncedDataUpdated(key)
         if (key == GENOME) refreshPhenotype()
+        if (key == STAGE) refreshDimensions()
     }
 
     override fun addAdditionalSaveData(tag: CompoundTag) {
@@ -155,7 +188,8 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
     /** From the race file; [Temperament.NEUTRAL] when the race isn't loaded. */
     val temperament: Temperament get() = race?.temperament ?: Temperament.NEUTRAL
 
-    private val fightsBack get() = !isBaby && temperament != Temperament.PASSIVE
+    // Babies flee; teens and adults defend themselves (and only adults go looking for trouble).
+    private val fightsBack get() = lifeStage != LifeStage.BABY && temperament != Temperament.PASSIVE
 
     fun sharesFaction(other: Entity?) = other is RHRaceEntity && other.faction == faction
 
@@ -182,7 +216,7 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
         goalSelector.addGoal(8, RandomLookAroundGoal(this))
         targetSelector.addGoal(1, FactionHurtByTargetGoal(this).setAlertOthers())
         targetSelector.addGoal(2, object : NearestAttackableTargetGoal<Player>(this, Player::class.java, true) {
-            override fun canUse() = !isBaby && temperament == Temperament.HOSTILE && super.canUse()
+            override fun canUse() = lifeStage == LifeStage.ADULT && temperament == Temperament.HOSTILE && super.canUse()
         })
     }
 
@@ -220,6 +254,7 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
 
     companion object {
         val GENOME: EntityDataAccessor<Genome> = SynchedEntityData.defineId(RHRaceEntity::class.java, RHDataSerializers.GENOME)
+        private val STAGE: EntityDataAccessor<Int> = SynchedEntityData.defineId(RHRaceEntity::class.java, EntityDataSerializers.INT)
         private const val GENOME_TAG = "Genome"
         private val SCALE_MODIFIER = "genetic_height".id()
 

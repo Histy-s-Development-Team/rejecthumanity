@@ -21,9 +21,10 @@ class SoftBody(private val stiffness: FloatArray = floatArrayOf(0.30f, 0.36f)) {
         val acceleration = (verticalSpeed - lastVerticalSpeed).toFloat()
         lastVerticalSpeed = verticalSpeed
 
-        // One push per footstep (twice per walk cycle), strongest at full walking speed.
+        // One push per footstep (twice per walk cycle), strongest at full walking speed. Smaller bodies step quicker,
+        // matching the walk cadence the renderer uses.
         val walk = entity.walkAnimation
-        val step = sin(walk.position() * 0.6662f * 2f) * walk.speed().coerceAtMost(1f)
+        val step = sin(walk.position() / entity.ageScale * 0.6662f * 2f) * walk.speed().coerceAtMost(1f)
 
         for (i in position.indices) {
             previous[i] = position[i]

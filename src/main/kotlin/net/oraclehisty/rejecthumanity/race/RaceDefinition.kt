@@ -43,13 +43,20 @@ enum class Temperament(private val serialized: String) : StringRepresentable {
 }
 
 /** A datapack-defined race (`data/<namespace>/rejecthumanity/race/<name>.json`): which genes it carries and how they look. */
-data class RaceDefinition(val genes: GenePlan, val mating: Mating, val temperament: Temperament, val appearance: Appearance) {
+data class RaceDefinition(
+    val genes: GenePlan,
+    val mating: Mating,
+    val temperament: Temperament,
+    val growth: Growth,
+    val appearance: Appearance,
+) {
     companion object {
         val CODEC: Codec<RaceDefinition> = RecordCodecBuilder.create { i ->
             i.group(
                 Codec.unboundedMap(ResourceLocation.CODEC, AllelePool.CODEC).fieldOf("genes").forGetter(RaceDefinition::genes),
                 Mating.CODEC.optionalFieldOf("mating", Mating.NONE).forGetter(RaceDefinition::mating),
                 Temperament.CODEC.optionalFieldOf("temperament", Temperament.NEUTRAL).forGetter(RaceDefinition::temperament),
+                Growth.CODEC.optionalFieldOf("growth", Growth.DEFAULT).forGetter(RaceDefinition::growth),
                 Appearance.CODEC.fieldOf("appearance").forGetter(RaceDefinition::appearance),
             ).apply(i, ::RaceDefinition)
         }

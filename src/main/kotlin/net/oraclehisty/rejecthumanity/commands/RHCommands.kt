@@ -19,6 +19,7 @@ import net.oraclehisty.rejecthumanity.helpers.entity
 import net.oraclehisty.rejecthumanity.helpers.execute
 import net.oraclehisty.rejecthumanity.helpers.literal
 import net.oraclehisty.rejecthumanity.helpers.register
+import net.oraclehisty.rejecthumanity.race.LifeStage
 import net.oraclehisty.rejecthumanity.race.RaceRegistry
 
 /** `/rh ...` debug commands for inspecting and editing genomes. */
@@ -41,6 +42,13 @@ object RHCommands {
                             it.rerollGenome()
                             source.sendSuccess({ Component.literal("Rerolled ${it.name.string}") }, true)
                         }
+                    }
+                }
+            }
+            literal("stage") {
+                entity("targets") {
+                    for (stage in LifeStage.entries) {
+                        literal(stage.name.lowercase()) { execute { setStage(stage) } }
                     }
                 }
             }
@@ -86,6 +94,17 @@ object RHCommands {
             "  ${id.path}: $genotype -> $shown$hidden"
         }
         source.sendSuccess({ Component.literal("${entity.name.string} (${entity.uuid}):\n$lines") }, false)
+    }
+
+    /** Puts each target at the start of [stage] (it keeps growing from there). */
+    private fun CommandContext<CommandSourceStack>.setStage(stage: LifeStage) = forEachRaceEntity {
+        val growth = it.growth
+        it.age = when (stage) {
+            LifeStage.BABY -> growth.newbornAge
+            LifeStage.TEEN -> -growth.teenTicks
+            LifeStage.ADULT -> 0
+        }
+        source.sendSuccess({ Component.literal("${it.name.string} is now a ${stage.name.lowercase()}") }, true)
     }
 
     private fun CommandContext<CommandSourceStack>.setGene(): Int {

@@ -42,6 +42,12 @@
     "differ_on": "rejecthumanity:sex"
   },
   "temperament": "neutral",
+  "growth": {
+    "baby_ticks": 24000,
+    "teen_ticks": 24000,
+    "baby_scale": 0.5,
+    "teen_scale": 0.9
+  },
   "appearance": {
     "model": "rejecthumanity:werewolf",
     "palettes": {
@@ -446,6 +452,9 @@
     ],
     "baby": {
       "model": "rejecthumanity:werewolf_pup"
+    },
+    "teen": {
+      "model": "rejecthumanity:werewolf_teen"
     }
   }
 }

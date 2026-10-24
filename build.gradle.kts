@@ -107,6 +107,18 @@ neoForge {
     }
 }
 
+// Asset generator: the race models, animations and placeholder textures are built by code in src/assetgen
+// (Kotlin, no mod dependencies). Run `./gradlew generateAssets` after changing it; output goes into src/main.
+val assetgen: SourceSet by sourceSets.creating
+
+tasks.register<JavaExec>("generateAssets") {
+    group = "rejecthumanity"
+    description = "Regenerates race models, animations and placeholder textures from src/assetgen."
+    classpath = assetgen.runtimeClasspath
+    mainClass = "net.oraclehisty.rejecthumanity.assetgen.AssetGenKt"
+    args(layout.projectDirectory.dir("src/main/resources/assets/$mod_id").asFile.absolutePath)
+}
+
 // Dependencies present for runtime testing but not pulled by dependents of this mod.
 val localRuntime: Configuration by configurations.creating
 configurations.runtimeClasspath {

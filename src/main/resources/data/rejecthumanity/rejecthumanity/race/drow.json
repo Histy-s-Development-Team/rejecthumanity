@@ -98,6 +98,12 @@
     "differ_on": "rejecthumanity:sex"
   },
   "temperament": "neutral",
+  "growth": {
+    "baby_ticks": 24000,
+    "teen_ticks": 24000,
+    "baby_scale": 0.5,
+    "teen_scale": 0.9
+  },
   "appearance": {
     "model": "rejecthumanity:elf",
     "palettes": {
@@ -521,6 +527,9 @@
     ],
     "baby": {
       "model": "rejecthumanity:elf_baby"
+    },
+    "teen": {
+      "model": "rejecthumanity:elf_teen"
     }
   }
 }

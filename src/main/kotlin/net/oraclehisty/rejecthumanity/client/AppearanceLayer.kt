@@ -35,7 +35,7 @@ class AppearanceLayer<T : RHRaceEntity>(renderer: GeoRenderer<T>) : GeoRenderLay
 
         for (layer in appearance.layers) {
             if (layer.hideOnBlink && blinking) continue
-            if (layer.adultOnly && animatable.isBaby) continue
+            if (layer.adultOnly && animatable.lifeStage.young) continue
             if (layer.whenCondition != null && !layer.whenCondition.test(phenotype)) continue
             val texture = layer.resolveTexture(phenotype, seed)?.takeIf(::textureExists) ?: continue
             val alpha = layer.alpha?.evaluate(phenotype)?.coerceIn(0f, 1f) ?: 1f
