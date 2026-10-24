@@ -32,7 +32,8 @@
     "rejecthumanity:vitiligo": {},
     "rejecthumanity:lip_tone": {},
     "rejecthumanity:facial_hair": {},
-    "rejecthumanity:elven_markings": {}
+    "rejecthumanity:elven_markings": {},
+    "rejecthumanity:chest_size": {}
   },
   "mating": {
     "differ_on": "rejecthumanity:sex"
@@ -275,6 +276,78 @@
           "gene": "rejecthumanity:sex",
           "is": "x"
         }
+      },
+      {
+        "bone": "RightBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "RightBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            -12
+          ]
+        },
+        "rotate_axes": "y"
+      },
+      {
+        "bone": "LeftBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "LeftBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            12
+          ]
+        },
+        "rotate_axes": "y"
       }
     ],
     "scale": [

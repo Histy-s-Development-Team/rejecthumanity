@@ -30,16 +30,19 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
     override fun setCustomAnimations(animatable: T, instanceId: Long, animationState: AnimationState<T>) {
         super.setCustomAnimations(animatable, instanceId, animationState)
         animateHumanoid(animatable, animationState)
-        applyBoneRules(animatable)
+        applyBoneRules(animatable, animationState)
     }
 
     // Bones are shared by every entity using this model, so everything here is re-applied every frame.
-    private fun applyBoneRules(animatable: T) {
+    private fun applyBoneRules(animatable: T, state: AnimationState<T>) {
         val appearance = animatable.appearance ?: return
         val phenotype = animatable.phenotype
         for (rule in appearance.bonesFor(animatable.isBaby)) {
             val visible = rule.visibleIf?.test(phenotype)
             val scale = rule.scale?.evaluate(phenotype)
+            val turns = rule.rotate != null || rule.jiggle != null
+            val jiggle = rule.jiggle?.let { it.evaluate(phenotype, 0f) * animatable.softBody.value(rule.jiggleChannel, state.partialTick) } ?: 0f
+            val angle = Math.toRadians(((rule.rotate?.evaluate(phenotype, 0f) ?: 0f) + jiggle).toDouble()).toFloat()
             for (name in rule.bones) {
                 val bone = getBone(name).orElse(null) ?: continue
                 if (visible != null) bone.isHidden = !visible
@@ -47,6 +50,12 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
                     bone.scaleX = if ('x' in rule.axes) scale else 1f
                     bone.scaleY = if ('y' in rule.axes) scale else 1f
                     bone.scaleZ = if ('z' in rule.axes) scale else 1f
+                }
+                if (turns) {
+                    val bind = bone.initialSnapshot
+                    if ('x' in rule.rotateAxes) bone.rotX = bind.rotX + angle
+                    if ('y' in rule.rotateAxes) bone.rotY = bind.rotY + angle
+                    if ('z' in rule.rotateAxes) bone.rotZ = bind.rotZ + angle
                 }
             }
         }

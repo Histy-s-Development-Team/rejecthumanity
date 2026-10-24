@@ -44,10 +44,14 @@ sealed interface Palette {
  * If [whenCondition] fails the rule contributes 1 (no change).
  */
 data class ScaleRule(val gene: ResourceLocation?, val range: FloatRange, val factor: Float, val whenCondition: Condition?) {
-    fun evaluate(phenotype: Phenotype): Float {
-        if (whenCondition != null && !whenCondition.test(phenotype)) return 1f
-        val fromGene = gene?.let { id -> phenotype.normalized(id)?.let(range::lerp) } ?: 1f
-        return fromGene * factor
+    fun evaluate(phenotype: Phenotype) = evaluate(phenotype, 1f)
+
+    /** [neutral] is returned when the rule doesn't apply: 1 for multipliers, 0 for offsets such as rotations. */
+    fun evaluate(phenotype: Phenotype, neutral: Float): Float {
+        if (whenCondition != null && !whenCondition.test(phenotype)) return neutral
+        if (gene == null) return if (range == FloatRange.UNIT) factor else range.min * factor
+        val value = phenotype.normalized(gene) ?: return neutral
+        return range.lerp(value) * factor
     }
 
     companion object {
@@ -164,14 +168,32 @@ data class Layer(
 }
 
 /**
- * Shows/hides and scales model bones. `"bone"` is one name or a list. [axes] picks which of x/y/z the scale
- * applies to, so a gene can e.g. lengthen ears outward without thickening them.
+ * Shows/hides, scales and rotates model bones. `"bone"` is one name or a list.
+ * - [scale] applies to the [axes] given (so a gene can lengthen ears outward without thickening them)
+ * - [rotate] is an angle in degrees added to the bind pose on [rotateAxes], e.g. from a size gene
+ * - [jiggle] is a bounce amplitude in degrees on [rotateAxes] (a number, or a gene rule so it grows with e.g. size),
+ *   driven by the entity's spring physics; [jiggleChannel] picks which spring, so paired parts move independently
  */
-data class BoneRule(val bones: List<String>, val visibleIf: Condition?, val scale: ScaleRule?, val axes: String) {
+data class BoneRule(
+    val bones: List<String>,
+    val visibleIf: Condition?,
+    val scale: ScaleRule?,
+    val axes: String,
+    val rotate: ScaleRule?,
+    val rotateAxes: String,
+    val jiggle: ScaleRule?,
+    val jiggleChannel: Int,
+) {
     companion object {
         private val NAMES: Codec<List<String>> = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
             { either -> either.map({ listOf(it) }, { it }) },
             { names -> if (names.size == 1) Either.left<String, List<String>>(names[0]) else Either.right<String, List<String>>(names) },
+        )
+
+        /** A plain number, or a full gene-driven rule. */
+        private val AMOUNT: Codec<ScaleRule> = Codec.either(Codec.FLOAT, ScaleRule.CODEC).xmap(
+            { either -> either.map({ ScaleRule(null, FloatRange.UNIT, it, null) }, { it }) },
+            { Either.right<Float, ScaleRule>(it) },
         )
 
         val CODEC: Codec<BoneRule> = RecordCodecBuilder.create { i ->
@@ -180,7 +202,13 @@ data class BoneRule(val bones: List<String>, val visibleIf: Condition?, val scal
                 Condition.CODEC.nullableFieldOf("visible_if", BoneRule::visibleIf),
                 ScaleRule.CODEC.nullableFieldOf("scale", BoneRule::scale),
                 Codec.STRING.optionalFieldOf("axes", "xyz").forGetter(BoneRule::axes),
-            ).apply(i) { bones, visibleIf, scale, axes -> BoneRule(bones, visibleIf.orNull(), scale.orNull(), axes) }
+                ScaleRule.CODEC.nullableFieldOf("rotate", BoneRule::rotate),
+                Codec.STRING.optionalFieldOf("rotate_axes", "x").forGetter(BoneRule::rotateAxes),
+                AMOUNT.nullableFieldOf("jiggle", BoneRule::jiggle),
+                Codec.INT.optionalFieldOf("jiggle_channel", 0).forGetter(BoneRule::jiggleChannel),
+            ).apply(i) { bones, visibleIf, scale, axes, rotate, rotateAxes, jiggle, jiggleChannel ->
+                BoneRule(bones, visibleIf.orNull(), scale.orNull(), axes, rotate.orNull(), rotateAxes, jiggle.orNull(), jiggleChannel)
+            }
         }
     }
 }

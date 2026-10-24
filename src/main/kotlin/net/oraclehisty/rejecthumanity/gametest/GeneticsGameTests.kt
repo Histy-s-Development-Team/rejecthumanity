@@ -36,7 +36,7 @@ object GeneticsGameTests {
     fun datapackLoads(helper: GameTestHelper) {
         val access = helper.level.registryAccess()
         val genes = access.registry(GeneRegistry.KEY).map { it.size() }.orElse(0)
-        helper.assertTrue(genes >= 18, "Expected the 18 built-in genes, found $genes")
+        helper.assertTrue(genes >= 19, "Expected the 19 built-in genes, found $genes")
         helper.assertTrue(RaceRegistry.get(access, ElfEntity.RACE) != null, "Elf race did not load")
         helper.succeed()
     }

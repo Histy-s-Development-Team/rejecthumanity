@@ -62,6 +62,9 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
 
     private val geoCache = GeckoLibUtil.createInstanceCache(this)
 
+    /** Client-side spring state for jiggle bone rules; never saved or synced. */
+    val softBody = SoftBody()
+
     val race: RaceDefinition? get() = RaceRegistry.get(level().registryAccess(), raceKey)
     val appearance: Appearance? get() = race?.appearance
 
@@ -123,8 +126,9 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
 
     override fun tick() {
         super.tick()
+        if (level().isClientSide) softBody.tick(this)
         // Catch spawns that skip finalizeSpawn (e.g. /summon with NBT, other mods).
-        if (!level().isClientSide && genome.isEmpty) rerollGenome()
+        else if (genome.isEmpty) rerollGenome()
     }
 
     // --- Breeding -------------------------------------------------------------------------------
