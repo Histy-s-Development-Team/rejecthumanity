@@ -1,10 +1,12 @@
 package net.oraclehisty.rejecthumanity.client
 
+import net.minecraft.server.packs.resources.ResourceManagerReloadListener
 import net.neoforged.api.distmarker.Dist.CLIENT
 import net.neoforged.fml.common.Mod
 import net.neoforged.neoforge.client.event.EntityRenderersEvent
-import net.neoforged.neoforge.common.NeoForge
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent
 import net.oraclehisty.rejecthumanity.RejectHumanity
+import net.oraclehisty.rejecthumanity.entities.ElfEntity
 import net.oraclehisty.rejecthumanity.entities.RHEntities
 import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 
@@ -12,8 +14,12 @@ import thedarkcolour.kotlinforforge.neoforge.forge.MOD_BUS
 object RHClient {
     init {
         MOD_BUS.addListener(::registerEntityRenderers)
+        MOD_BUS.addListener<RegisterClientReloadListenersEvent> { event ->
+            event.registerReloadListener(ResourceManagerReloadListener { AppearanceLayer.clearCache() })
+        }
     }
+
     fun registerEntityRenderers(event: EntityRenderersEvent.RegisterRenderers) {
-        event.registerEntityRenderer(RHEntities.GENERIC_ENTITY, ::RHGenericEntityRenderer)
+        event.registerEntityRenderer(RHEntities.ELF) { RaceRenderer<ElfEntity>(it) }
     }
 }

@@ -1,0 +1,10 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.003,
+  "defaults": [
+    { "id": "none", "dominance": 1, "weight": 90 },
+    { "id": "circlet", "dominance": 0, "weight": 4 },
+    { "id": "tendrils", "dominance": 0, "weight": 3 },
+    { "id": "runes", "dominance": 0, "weight": 3 }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.005,
+  "defaults": [
+    { "id": "regular", "dominance": 1, "weight": 3 },
+    { "id": "blocky", "dominance": 0, "weight": 1 }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "continuous",
+  "range": [0, 1],
+  "mutation": 0.04,
+  "defaults": [
+    { "value": 0.15, "weight": 3 },
+    { "value": 0.45, "weight": 3 },
+    { "value": 0.75, "weight": 2 },
+    { "value": 0.95, "weight": 2 }
+  ]
+}

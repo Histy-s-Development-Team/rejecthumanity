@@ -1,0 +1,12 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0,
+  "defaults": [
+    { "id": "x", "dominance": 0, "weight": 0 },
+    { "id": "y", "dominance": 1, "weight": 0 }
+  ],
+  "default_genotypes": [
+    { "pair": ["x", "x"], "weight": 1 },
+    { "pair": ["x", "y"], "weight": 1 }
+  ]
+}

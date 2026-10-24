@@ -1,0 +1,256 @@
+{
+  "genes": {
+    "rejecthumanity:sex": {},
+    "rejecthumanity:skin_tone": {
+      "defaults": [
+        {
+          "value": 0.12,
+          "weight": 4
+        },
+        {
+          "value": 0.3,
+          "weight": 3
+        },
+        {
+          "value": 0.55,
+          "weight": 1
+        }
+      ]
+    },
+    "rejecthumanity:hair_pigment": {},
+    "rejecthumanity:hair_style": {},
+    "rejecthumanity:eye_color": {},
+    "rejecthumanity:ear_type": {},
+    "rejecthumanity:ear_length": {},
+    "rejecthumanity:height": {},
+    "rejecthumanity:albinism": {},
+    "rejecthumanity:heterochromia": {},
+    "rejecthumanity:magic_capacity": {},
+    "rejecthumanity:complexion": {},
+    "rejecthumanity:blush": {},
+    "rejecthumanity:under_eye": {},
+    "rejecthumanity:vitiligo": {},
+    "rejecthumanity:lip_tone": {},
+    "rejecthumanity:facial_hair": {},
+    "rejecthumanity:elven_markings": {}
+  },
+  "mating": {
+    "differ_on": "rejecthumanity:sex"
+  },
+  "appearance": {
+    "model": "rejecthumanity:genericelf",
+    "palettes": {
+      "skin": [
+        "#FFF4F0",
+        "#F6DCC6",
+        "#C99A74",
+        "#6B4430"
+      ],
+      "hair": [
+        "#FAF6EE",
+        "#F2E3B0",
+        "#A0662E",
+        "#1E1410"
+      ],
+      "lips": [
+        "#E8B4B0",
+        "#C9726E",
+        "#8E3B44"
+      ],
+      "eyes": {
+        "amber": "#C88A2E",
+        "green": "#4E9A4A",
+        "blue": "#4A78C8",
+        "red": "#C8323C"
+      },
+      "markings": {
+        "circlet": "#9FE8FF",
+        "tendrils": "#B4FFC8",
+        "runes": "#E0B0FF"
+      }
+    },
+    "base": {
+      "texture": "rejecthumanity:textures/entity/elf/skin.png",
+      "tint": {
+        "gene": "rejecthumanity:skin_tone",
+        "palette": "skin"
+      }
+    },
+    "layers": [
+      {
+        "texture": "rejecthumanity:textures/entity/elf/under_eye.png",
+        "tint": {
+          "gene": "rejecthumanity:skin_tone",
+          "palette": "skin",
+          "darken": 0.35
+        },
+        "alpha": {
+          "gene": "rejecthumanity:under_eye",
+          "range": [
+            0,
+            0.8
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/complexion/{rejecthumanity:complexion}.png",
+        "skip_values": [
+          "clear"
+        ],
+        "tint": {
+          "gene": "rejecthumanity:skin_tone",
+          "palette": "skin",
+          "darken": 0.3
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/vitiligo/{random:2}.png",
+        "when": {
+          "gene": "rejecthumanity:vitiligo",
+          "is": "vitiligo"
+        },
+        "tint": {
+          "color": "#FFF4F0"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/blush.png",
+        "tint": {
+          "color": "#E0707A"
+        },
+        "alpha": {
+          "gene": "rejecthumanity:blush",
+          "range": [
+            0,
+            0.6
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/lips.png",
+        "tint": {
+          "gene": "rejecthumanity:lip_tone",
+          "palette": "lips"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_whites.png"
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_left.png",
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is_not": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes",
+          "source": "secondary",
+          "distinct": true
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/markings/{rejecthumanity:elven_markings}.png",
+        "skip_values": [
+          "none"
+        ],
+        "emissive": true,
+        "tint": {
+          "gene": "rejecthumanity:elven_markings",
+          "palette": "markings"
+        },
+        "alpha": {
+          "gene": "rejecthumanity:magic_capacity",
+          "range": [
+            0.35,
+            1
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/clothes/{rejecthumanity:sex}.png"
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/facial_hair/{rejecthumanity:facial_hair}.png",
+        "skip_values": [
+          "none"
+        ],
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/hair/{rejecthumanity:hair_style}.png",
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair"
+        }
+      }
+    ],
+    "bones": [
+      {
+        "bone": "Regular Elf Ears",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_type",
+          "is": "regular"
+        },
+        "scale": {
+          "gene": "rejecthumanity:ear_length",
+          "range": [
+            0.8,
+            1.4
+          ]
+        }
+      },
+      {
+        "bone": "Blocky Elf Ears",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_type",
+          "is": "blocky"
+        },
+        "scale": {
+          "gene": "rejecthumanity:ear_length",
+          "range": [
+            0.8,
+            1.4
+          ]
+        }
+      }
+    ],
+    "scale": [
+      {
+        "gene": "rejecthumanity:height",
+        "range": [
+          0.9,
+          1.1
+        ]
+      },
+      {
+        "when": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        },
+        "factor": 0.95
+      }
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.005,
+  "defaults": [
+    { "id": "uniform", "dominance": 1, "weight": 95 },
+    { "id": "heterochromia", "dominance": 0, "weight": 5 }
+  ]
+}

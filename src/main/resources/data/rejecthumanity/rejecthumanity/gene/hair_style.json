@@ -1,0 +1,10 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.02,
+  "defaults": [
+    { "id": "short_crop", "dominance": 1, "weight": 2 },
+    { "id": "short_swept", "dominance": 1, "weight": 2 },
+    { "id": "long_straight", "dominance": 0, "weight": 3 },
+    { "id": "long_braid", "dominance": 0, "weight": 2 }
+  ]
+}

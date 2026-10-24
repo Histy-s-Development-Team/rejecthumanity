@@ -1,0 +1,10 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    { "id": "amber", "dominance": 3, "weight": 2 },
+    { "id": "green", "dominance": 2, "weight": 3 },
+    { "id": "blue", "dominance": 1, "weight": 2 },
+    { "id": "red", "dominance": 0, "weight": 0 }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    { "id": "clear", "weight": 6 },
+    { "id": "minimal_freckles", "weight": 3 },
+    { "id": "freckles", "weight": 2 },
+    { "id": "face_mole", "weight": 2 },
+    { "id": "freckles_and_mole", "weight": 1 }
+  ]
+}

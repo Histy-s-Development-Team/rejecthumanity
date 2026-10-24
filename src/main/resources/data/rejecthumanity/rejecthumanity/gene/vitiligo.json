@@ -1,0 +1,8 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.002,
+  "defaults": [
+    { "id": "none", "dominance": 1, "weight": 97 },
+    { "id": "vitiligo", "dominance": 0, "weight": 3 }
+  ]
+}

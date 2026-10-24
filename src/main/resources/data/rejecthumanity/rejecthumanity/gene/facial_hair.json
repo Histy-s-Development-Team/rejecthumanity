@@ -1,0 +1,11 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "expressed_if": { "gene": "rejecthumanity:sex", "is": "y" },
+  "fallback": "none",
+  "defaults": [
+    { "id": "none", "dominance": 0, "weight": 90 },
+    { "id": "stubble", "dominance": 1, "weight": 6 },
+    { "id": "beard", "dominance": 2, "weight": 4 }
+  ]
+}
