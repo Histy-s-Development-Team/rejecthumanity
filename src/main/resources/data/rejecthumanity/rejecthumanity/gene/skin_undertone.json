@@ -1,0 +1,26 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.005,
+  "defaults": [
+    {
+      "id": "natural",
+      "dominance": 2,
+      "weight": 1
+    },
+    {
+      "id": "slate",
+      "dominance": 1,
+      "weight": 1
+    },
+    {
+      "id": "blue",
+      "dominance": 0,
+      "weight": 1
+    },
+    {
+      "id": "albino",
+      "dominance": 0,
+      "weight": 0
+    }
+  ]
+}

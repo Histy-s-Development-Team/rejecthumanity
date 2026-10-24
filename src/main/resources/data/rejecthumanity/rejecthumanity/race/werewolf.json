@@ -1,0 +1,448 @@
+{
+  "genes": {
+    "rejecthumanity:sex": {},
+    "rejecthumanity:height": {},
+    "rejecthumanity:heterochromia": {},
+    "rejecthumanity:albinism": {},
+    "rejecthumanity:magic_capacity": {},
+    "rejecthumanity:chest_size": {},
+    "rejecthumanity:coat_pigment": {},
+    "rejecthumanity:coat_pattern": {},
+    "rejecthumanity:white_markings": {},
+    "rejecthumanity:countershade": {},
+    "rejecthumanity:muzzle_length": {},
+    "rejecthumanity:ruff_size": {},
+    "rejecthumanity:ear_shape": {},
+    "rejecthumanity:tail_shape": {},
+    "rejecthumanity:eye_color": {
+      "defaults": [
+        {
+          "id": "amber",
+          "weight": 3
+        },
+        {
+          "id": "brown",
+          "weight": 3
+        },
+        {
+          "id": "gold",
+          "weight": 2
+        },
+        {
+          "id": "blue",
+          "weight": 1
+        }
+      ]
+    },
+    "rejecthumanity:ear_size": {},
+    "rejecthumanity:ear_set": {},
+    "rejecthumanity:ear_carriage": {}
+  },
+  "mating": {
+    "differ_on": "rejecthumanity:sex"
+  },
+  "temperament": "neutral",
+  "appearance": {
+    "model": "rejecthumanity:werewolf",
+    "palettes": {
+      "fur": [
+        "#F2E6D0",
+        "#C9B08A",
+        "#9A8F86",
+        "#6B4A30",
+        "#2A2522"
+      ],
+      "eyes": {
+        "amber": "#D08A24",
+        "brown": "#6E4422",
+        "gold": "#E6C040",
+        "blue": "#7FB8E6",
+        "green": "#5AA050",
+        "red": "#C8323C",
+        "violet": "#A060E0"
+      }
+    },
+    "base": {
+      "texture": "rejecthumanity:textures/entity/werewolf/fur.png",
+      "tint": {
+        "gene": "rejecthumanity:coat_pigment",
+        "palette": "fur"
+      }
+    },
+    "layers": [
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/countershade.png",
+        "tint": {
+          "color": "#F0E4CC"
+        },
+        "alpha": {
+          "gene": "rejecthumanity:countershade",
+          "range": [
+            0,
+            0.85
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/pattern/{rejecthumanity:coat_pattern}.png",
+        "skip_values": [
+          "solid"
+        ],
+        "tint": {
+          "gene": "rejecthumanity:coat_pigment",
+          "palette": "fur",
+          "darken": 0.55
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/markings/{rejecthumanity:white_markings}.png",
+        "skip_values": [
+          "none"
+        ],
+        "tint": {
+          "color": "#F4F0EA"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/inner_ear.png"
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/nose.png"
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/eye_left.png",
+        "hide_on_blink": true,
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/eye_right.png",
+        "hide_on_blink": true,
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is_not": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/eye_right.png",
+        "hide_on_blink": true,
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes",
+          "source": "secondary",
+          "distinct": true
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/werewolf/clothes/{rejecthumanity:sex}.png"
+      }
+    ],
+    "bones": [
+      {
+        "bone": "EarsErect",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_shape",
+          "is_not": "floppy"
+        }
+      },
+      {
+        "bone": "EarsFloppy",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_shape",
+          "is": "floppy"
+        }
+      },
+      {
+        "bone": [
+          "RightEar",
+          "LeftEar",
+          "RightEarFloppy",
+          "LeftEarFloppy"
+        ],
+        "scale": {
+          "gene": "rejecthumanity:ear_size",
+          "range": [
+            0.8,
+            1.3
+          ]
+        }
+      },
+      {
+        "bone": "RightEar",
+        "rotate": {
+          "gene": "rejecthumanity:ear_set",
+          "range": [
+            -12,
+            18
+          ]
+        },
+        "rotate_axes": "z"
+      },
+      {
+        "bone": "LeftEar",
+        "rotate": {
+          "gene": "rejecthumanity:ear_set",
+          "range": [
+            12,
+            -18
+          ]
+        },
+        "rotate_axes": "z"
+      },
+      {
+        "bone": "RightEar",
+        "rotate": {
+          "gene": "rejecthumanity:ear_carriage",
+          "range": [
+            -14,
+            18
+          ]
+        },
+        "jiggle": 4,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "LeftEar",
+        "rotate": {
+          "gene": "rejecthumanity:ear_carriage",
+          "range": [
+            -14,
+            18
+          ]
+        },
+        "jiggle": 4,
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "RightEarTip",
+        "rotate": {
+          "when": {
+            "gene": "rejecthumanity:ear_shape",
+            "is": "folded"
+          },
+          "factor": -80
+        },
+        "jiggle": {
+          "when": {
+            "gene": "rejecthumanity:ear_shape",
+            "is": "folded"
+          },
+          "factor": 12
+        },
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "LeftEarTip",
+        "rotate": {
+          "when": {
+            "gene": "rejecthumanity:ear_shape",
+            "is": "folded"
+          },
+          "factor": -80
+        },
+        "jiggle": {
+          "when": {
+            "gene": "rejecthumanity:ear_shape",
+            "is": "folded"
+          },
+          "factor": 12
+        },
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "RightEarFloppy",
+        "jiggle": 10,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "LeftEarFloppy",
+        "jiggle": 10,
+        "jiggle_channel": 1
+      },
+      {
+        "bone": [
+          "RightEar",
+          "LeftEar"
+        ],
+        "rotate": {
+          "factor": 55
+        },
+        "state": "aggressive"
+      },
+      {
+        "bone": [
+          "Muzzle",
+          "Jaw"
+        ],
+        "scale": {
+          "gene": "rejecthumanity:muzzle_length",
+          "range": [
+            0.8,
+            1.35
+          ]
+        },
+        "axes": "z"
+      },
+      {
+        "bone": "Ruff",
+        "scale": {
+          "gene": "rejecthumanity:ruff_size",
+          "range": [
+            0.85,
+            1.3
+          ]
+        }
+      },
+      {
+        "bone": "Chest",
+        "visible_if": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        }
+      },
+      {
+        "bone": "RightBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "RightBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            -12
+          ]
+        },
+        "rotate_axes": "y"
+      },
+      {
+        "bone": "LeftBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "LeftBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            12
+          ]
+        },
+        "rotate_axes": "y"
+      },
+      {
+        "bone": "Tail",
+        "rotate": {
+          "when": {
+            "gene": "rejecthumanity:tail_shape",
+            "is": "curled"
+          },
+          "factor": -95
+        }
+      },
+      {
+        "bone": "TailMid",
+        "rotate": {
+          "when": {
+            "gene": "rejecthumanity:tail_shape",
+            "is": "curled"
+          },
+          "factor": -45
+        }
+      },
+      {
+        "bone": [
+          "TailMid",
+          "TailTip"
+        ],
+        "scale": {
+          "when": {
+            "gene": "rejecthumanity:tail_shape",
+            "is": "bushy"
+          },
+          "factor": 1.35
+        }
+      },
+      {
+        "bone": "Tail",
+        "rotate_axes": "y",
+        "jiggle": 12,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "TailMid",
+        "rotate_axes": "y",
+        "jiggle": 8,
+        "jiggle_channel": 1
+      }
+    ],
+    "scale": [
+      {
+        "gene": "rejecthumanity:height",
+        "range": [
+          0.95,
+          1.1
+        ]
+      },
+      {
+        "when": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        },
+        "factor": 0.95
+      }
+    ]
+  }
+}

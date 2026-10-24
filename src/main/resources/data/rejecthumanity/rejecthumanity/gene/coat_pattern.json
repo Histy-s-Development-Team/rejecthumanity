@@ -1,0 +1,26 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    {
+      "id": "solid",
+      "dominance": 3,
+      "weight": 2
+    },
+    {
+      "id": "saddle",
+      "dominance": 2,
+      "weight": 2
+    },
+    {
+      "id": "agouti",
+      "dominance": 1,
+      "weight": 4
+    },
+    {
+      "id": "masked",
+      "dominance": 0,
+      "weight": 2
+    }
+  ]
+}

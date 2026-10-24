@@ -1,0 +1,21 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    {
+      "id": "erect",
+      "dominance": 2,
+      "weight": 3
+    },
+    {
+      "id": "folded",
+      "dominance": 1,
+      "weight": 2
+    },
+    {
+      "id": "floppy",
+      "dominance": 0,
+      "weight": 2
+    }
+  ]
+}

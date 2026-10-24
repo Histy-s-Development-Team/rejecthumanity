@@ -1,0 +1,26 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    {
+      "id": "none",
+      "dominance": 1,
+      "weight": 6
+    },
+    {
+      "id": "socks",
+      "dominance": 0,
+      "weight": 2
+    },
+    {
+      "id": "blaze",
+      "dominance": 0,
+      "weight": 1
+    },
+    {
+      "id": "piebald",
+      "dominance": 0,
+      "weight": 1
+    }
+  ]
+}

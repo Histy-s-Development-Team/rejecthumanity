@@ -1,0 +1,526 @@
+{
+  "genes": {
+    "rejecthumanity:sex": {},
+    "rejecthumanity:skin_tone": {
+      "defaults": [
+        {
+          "value": 0.1,
+          "weight": 2
+        },
+        {
+          "value": 0.35,
+          "weight": 3
+        },
+        {
+          "value": 0.6,
+          "weight": 3
+        },
+        {
+          "value": 0.9,
+          "weight": 2
+        }
+      ]
+    },
+    "rejecthumanity:hair_pigment": {},
+    "rejecthumanity:hair_style": {
+      "defaults": [
+        {
+          "id": "short_swept",
+          "weight": 1
+        },
+        {
+          "id": "long_straight",
+          "weight": 3
+        },
+        {
+          "id": "long_braid",
+          "weight": 2
+        }
+      ]
+    },
+    "rejecthumanity:eye_color": {
+      "defaults": [
+        {
+          "id": "red",
+          "weight": 3
+        },
+        {
+          "id": "violet",
+          "weight": 3
+        },
+        {
+          "id": "amber",
+          "weight": 1
+        }
+      ]
+    },
+    "rejecthumanity:ear_type": {},
+    "rejecthumanity:ear_length": {},
+    "rejecthumanity:height": {},
+    "rejecthumanity:albinism": {},
+    "rejecthumanity:heterochromia": {},
+    "rejecthumanity:magic_capacity": {},
+    "rejecthumanity:complexion": {},
+    "rejecthumanity:blush": {},
+    "rejecthumanity:under_eye": {},
+    "rejecthumanity:vitiligo": {},
+    "rejecthumanity:lip_tone": {},
+    "rejecthumanity:facial_hair": {},
+    "rejecthumanity:elven_markings": {},
+    "rejecthumanity:chest_size": {},
+    "rejecthumanity:ponytail": {
+      "defaults": [
+        {
+          "id": "none",
+          "weight": 2
+        },
+        {
+          "id": "high",
+          "weight": 2
+        },
+        {
+          "id": "low",
+          "weight": 1
+        },
+        {
+          "id": "braid",
+          "weight": 3
+        },
+        {
+          "id": "twin",
+          "weight": 1
+        }
+      ]
+    },
+    "rejecthumanity:skin_undertone": {}
+  },
+  "mating": {
+    "differ_on": "rejecthumanity:sex"
+  },
+  "temperament": "neutral",
+  "appearance": {
+    "model": "rejecthumanity:elf",
+    "palettes": {
+      "skin_natural": [
+        "#A5683A",
+        "#7A4A2A",
+        "#52301E",
+        "#2B1A12"
+      ],
+      "skin_blue": [
+        "#465A94",
+        "#2E3F73",
+        "#1E2A52",
+        "#121A33"
+      ],
+      "skin_slate": [
+        "#6A7383",
+        "#4B5363",
+        "#353B47",
+        "#23272F"
+      ],
+      "skin_albino": [
+        "#F2E8EC",
+        "#E6D8DE"
+      ],
+      "hair": [
+        "#FFFFFF",
+        "#EEF0F5",
+        "#D3D7DF",
+        "#B4B9C3"
+      ],
+      "lips": [
+        "#7A4656",
+        "#5A3A44",
+        "#3E2A36"
+      ],
+      "eyes": {
+        "amber": "#D9A030",
+        "green": "#4E9A4A",
+        "blue": "#4A78C8",
+        "violet": "#A060E0",
+        "red": "#D02838"
+      },
+      "markings": {
+        "circlet": "#C080FF",
+        "tendrils": "#FF5C7A",
+        "runes": "#7FD4FF"
+      },
+      "dyes": {
+        "crimson": "#C8243C",
+        "violet": "#8E3BD9",
+        "teal": "#1FB5A8",
+        "gold": "#E0B040",
+        "magenta": "#E040A0",
+        "ice": "#6EC8FF"
+      }
+    },
+    "base": {
+      "texture": "rejecthumanity:textures/entity/elf/skin.png",
+      "tint": {
+        "gene": "rejecthumanity:skin_tone",
+        "palette": "skin_{rejecthumanity:skin_undertone}"
+      }
+    },
+    "layers": [
+      {
+        "texture": "rejecthumanity:textures/entity/elf/under_eye.png",
+        "tint": {
+          "gene": "rejecthumanity:skin_tone",
+          "palette": "skin_{rejecthumanity:skin_undertone}",
+          "darken": 0.35
+        },
+        "alpha": {
+          "gene": "rejecthumanity:under_eye",
+          "range": [
+            0,
+            0.8
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/complexion/{rejecthumanity:complexion}.png",
+        "skip_values": [
+          "clear"
+        ],
+        "tint": {
+          "gene": "rejecthumanity:skin_tone",
+          "palette": "skin_{rejecthumanity:skin_undertone}",
+          "darken": 0.3
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/vitiligo/{random:2}.png",
+        "when": {
+          "gene": "rejecthumanity:vitiligo",
+          "is": "vitiligo"
+        },
+        "tint": {
+          "color": "#FFF4F0"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/blush.png",
+        "tint": {
+          "color": "#E0707A"
+        },
+        "alpha": {
+          "gene": "rejecthumanity:blush",
+          "range": [
+            0,
+            0.6
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/lips.png",
+        "tint": {
+          "gene": "rejecthumanity:lip_tone",
+          "palette": "lips"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_whites.png",
+        "hide_on_blink": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_left.png",
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        },
+        "hide_on_blink": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is_not": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes"
+        },
+        "hide_on_blink": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
+        "when": {
+          "gene": "rejecthumanity:heterochromia",
+          "is": "heterochromia"
+        },
+        "tint": {
+          "gene": "rejecthumanity:eye_color",
+          "palette": "eyes",
+          "source": "secondary",
+          "distinct": true
+        },
+        "hide_on_blink": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eyelashes.png",
+        "when": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        },
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair",
+          "darken": 0.45
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/markings/{rejecthumanity:elven_markings}.png",
+        "skip_values": [
+          "none"
+        ],
+        "emissive": true,
+        "tint": {
+          "gene": "rejecthumanity:elven_markings",
+          "palette": "markings"
+        },
+        "alpha": {
+          "gene": "rejecthumanity:magic_capacity",
+          "range": [
+            0.35,
+            1
+          ]
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/drow/clothes/{rejecthumanity:sex}.png"
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/facial_hair/{rejecthumanity:facial_hair}.png",
+        "skip_values": [
+          "none"
+        ],
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair"
+        },
+        "adult_only": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/hair/{rejecthumanity:hair_style}.png",
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/drow/accents/bangs_{random:3}.png",
+        "skip_values": [
+          "0"
+        ],
+        "tint": {
+          "palette": "dyes",
+          "source": "random"
+        }
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/drow/accents/ponytail_{random:3}.png",
+        "skip_values": [
+          "0"
+        ],
+        "when": {
+          "gene": "rejecthumanity:ponytail",
+          "is_not": "none"
+        },
+        "tint": {
+          "palette": "dyes",
+          "source": "random"
+        }
+      }
+    ],
+    "bones": [
+      {
+        "bone": "EarsRegular",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_type",
+          "is": "regular"
+        }
+      },
+      {
+        "bone": "EarsBlocky",
+        "visible_if": {
+          "gene": "rejecthumanity:ear_type",
+          "is": "blocky"
+        }
+      },
+      {
+        "bone": [
+          "RightEar",
+          "LeftEar",
+          "RightEarBlocky",
+          "LeftEarBlocky"
+        ],
+        "scale": {
+          "gene": "rejecthumanity:ear_length",
+          "range": [
+            0.75,
+            1.5
+          ]
+        },
+        "axes": "x"
+      },
+      {
+        "bone": [
+          "RightArmWide",
+          "LeftArmWide"
+        ],
+        "visible_if": {
+          "gene": "rejecthumanity:sex",
+          "is": "y"
+        }
+      },
+      {
+        "bone": [
+          "RightArmSlim",
+          "LeftArmSlim",
+          "Chest"
+        ],
+        "visible_if": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        }
+      },
+      {
+        "bone": "RightBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "RightBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            -12
+          ]
+        },
+        "rotate_axes": "y"
+      },
+      {
+        "bone": "LeftBreast",
+        "scale": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0.75,
+            1.25
+          ]
+        },
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            8,
+            24
+          ]
+        },
+        "jiggle": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            4,
+            14
+          ]
+        },
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "LeftBreast",
+        "rotate": {
+          "gene": "rejecthumanity:chest_size",
+          "range": [
+            0,
+            12
+          ]
+        },
+        "rotate_axes": "y"
+      },
+      {
+        "bone": "PonytailHigh",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "high"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailLow",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "low"
+        },
+        "jiggle": 6,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailBraid",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "braid"
+        },
+        "jiggle": 7,
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "PonytailTwinLeft",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "twin"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailTwinRight",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "twin"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 1
+      }
+    ],
+    "scale": [
+      {
+        "gene": "rejecthumanity:height",
+        "range": [
+          0.88,
+          1.04
+        ]
+      },
+      {
+        "when": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        },
+        "factor": 0.95
+      }
+    ],
+    "baby": {
+      "model": "rejecthumanity:elf_baby"
+    }
+  }
+}

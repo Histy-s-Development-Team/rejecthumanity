@@ -33,7 +33,8 @@
     "rejecthumanity:lip_tone": {},
     "rejecthumanity:facial_hair": {},
     "rejecthumanity:elven_markings": {},
-    "rejecthumanity:chest_size": {}
+    "rejecthumanity:chest_size": {},
+    "rejecthumanity:ponytail": {}
   },
   "mating": {
     "differ_on": "rejecthumanity:sex"
@@ -348,6 +349,51 @@
           ]
         },
         "rotate_axes": "y"
+      },
+      {
+        "bone": "PonytailHigh",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "high"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailLow",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "low"
+        },
+        "jiggle": 6,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailBraid",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "braid"
+        },
+        "jiggle": 7,
+        "jiggle_channel": 1
+      },
+      {
+        "bone": "PonytailTwinLeft",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "twin"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 0
+      },
+      {
+        "bone": "PonytailTwinRight",
+        "visible_if": {
+          "gene": "rejecthumanity:ponytail",
+          "is": "twin"
+        },
+        "jiggle": 8,
+        "jiggle_channel": 1
       }
     ],
     "scale": [

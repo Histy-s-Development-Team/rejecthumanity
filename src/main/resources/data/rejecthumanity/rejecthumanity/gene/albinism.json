@@ -2,8 +2,16 @@
   "type": "discrete",
   "mutation_chance": 0.002,
   "defaults": [
-    { "id": "normal", "dominance": 1, "weight": 97 },
-    { "id": "albino", "dominance": 0, "weight": 3 }
+    {
+      "id": "normal",
+      "dominance": 1,
+      "weight": 97
+    },
+    {
+      "id": "albino",
+      "dominance": 0,
+      "weight": 3
+    }
   ],
   "epistasis": [
     {
@@ -11,7 +19,9 @@
       "set": {
         "rejecthumanity:skin_tone": 0.0,
         "rejecthumanity:hair_pigment": 0.0,
-        "rejecthumanity:eye_color": "red"
+        "rejecthumanity:eye_color": "red",
+        "rejecthumanity:skin_undertone": "albino",
+        "rejecthumanity:coat_pigment": 0.0
       }
     }
   ]

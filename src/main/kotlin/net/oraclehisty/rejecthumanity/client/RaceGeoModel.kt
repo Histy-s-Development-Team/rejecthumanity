@@ -7,7 +7,9 @@ import software.bernie.geckolib.animation.AnimationState
 import software.bernie.geckolib.cache.`object`.GeoBone
 import software.bernie.geckolib.model.DefaultedEntityGeoModel
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.cos
+import kotlin.math.max
 import kotlin.math.sin
 import kotlin.math.sqrt
 
@@ -38,6 +40,7 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
         val appearance = animatable.appearance ?: return
         val phenotype = animatable.phenotype
         for (rule in appearance.bonesFor(animatable.isBaby)) {
+            if (rule.state != null && !inState(animatable, rule.state, state)) continue
             val visible = rule.visibleIf?.test(phenotype)
             val scale = rule.scale?.evaluate(phenotype)
             val turns = rule.rotate != null || rule.jiggle != null
@@ -59,6 +62,15 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
                 }
             }
         }
+    }
+
+    private fun inState(entity: T, name: String, state: AnimationState<T>) = when (name) {
+        "aggressive" -> entity.isAggressive
+        "moving" -> state.limbSwingAmount > 0.15f
+        "idle" -> state.limbSwingAmount <= 0.15f
+        "baby" -> entity.isBaby
+        "sleeping" -> entity.isSleeping
+        else -> false
     }
 
     /** A port of vanilla HumanoidModel.setupAnim: walk cycle, idle arm sway, riding pose and melee swing. */
@@ -129,6 +141,36 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
         leftArm.set(lArmX, lArmY, lArmZ * Z_SIGN)
         rightLeg.set(rLegX, rLegY, rLegZ * Z_SIGN)
         leftLeg.set(lLegX, lLegY, lLegZ * Z_SIGN)
+        if (!entity.isPassenger) animateDigitigrade(swing, amount, rLegX, lLegX)
+    }
+
+    /**
+     * Extra joints for digitigrade legs (models with RightShin/RightPaw/LeftShin/LeftPaw under the leg bones).
+     * The hock folds while each leg swings forward to lift the paw, then straightens through the stance; the paw
+     * stays level with the ground, tips up to reach as it lifts and flicks down at push-off. The body dips each step.
+     */
+    private fun animateDigitigrade(swing: Float, amount: Float, rightHip: Float, leftHip: Float) {
+        val rightShin = bone("RightShin") ?: return
+        val rightPaw = bone("RightPaw") ?: return
+        val leftShin = bone("LeftShin") ?: return
+        val leftPaw = bone("LeftPaw") ?: return
+        stride(rightShin, rightPaw, swing, amount, rightHip)
+        stride(leftShin, leftPaw, swing + PI.toFloat(), amount, leftHip)
+        // Upper body sinks onto each planted leg (twice per cycle); the legs stay put so the dip reads against
+        // the ground. Children (tail, ruff, chest) follow the body.
+        val dip = -abs(sin(swing)) * amount.coerceAtLeast(0f) * 2.4f
+        for (name in UPPER_BODY) bone(name)?.posY = dip
+    }
+
+    /** [phase] matches the hip's walk phase: the leg swings forward while sin(phase) < 0. */
+    private fun stride(shin: GeoBone, paw: GeoBone, phase: Float, amount: Float, hip: Float) {
+        val lift = max(0f, -sin(phase)) * amount   // recovery: leg travelling forward, off the ground
+        val pushOff = max(0f, -cos(phase)) * amount // end of stance: leg furthest back
+        // Runtime +X swings a part's lower end forward, so folding the hock further is negative.
+        val shinAngle = -lift * 1.2f
+        shin.set(shinAngle, 0f, 0f)
+        // Cancel the hip and hock so the paw stays level, then add the reach and the push-off flick.
+        paw.set(-(hip + shinAngle) + lift * 0.35f - pushOff * 0.45f, 0f, 0f)
     }
 
     private fun bone(name: String): GeoBone? = getBone(name).orElse(null)
@@ -145,5 +187,7 @@ class RaceGeoModel<T : RHRaceEntity> : DefaultedEntityGeoModel<T>(FALLBACK, "Hea
 
         /** Vanilla and GeckoLib agree on X/Y rotation direction; Z is mirrored between the two. */
         private const val Z_SIGN = -1f
+
+        private val UPPER_BODY = listOf("Body", "Head", "RightArm", "LeftArm")
     }
 }

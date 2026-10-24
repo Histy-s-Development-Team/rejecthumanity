@@ -10,6 +10,7 @@ import net.oraclehisty.rejecthumanity.entities.RHEntities
 import net.oraclehisty.rejecthumanity.genetics.GeneDefinition
 import net.oraclehisty.rejecthumanity.genetics.GeneRegistry
 import net.oraclehisty.rejecthumanity.genetics.RHDataSerializers
+import net.oraclehisty.rejecthumanity.items.RHCreativeTabs
 import net.oraclehisty.rejecthumanity.items.RHItems
 import net.oraclehisty.rejecthumanity.race.RaceDefinition
 import net.oraclehisty.rejecthumanity.race.RaceRegistry
@@ -27,7 +28,6 @@ object RejectHumanity {
         MOD_BUS.addListener(::onCommonSetup)
         MOD_BUS.addListener(RHEntities::registerAttributes)
         MOD_BUS.addListener(RHEntities::registerSpawnPlacements)
-        MOD_BUS.addListener(RHItems::addToCreativeTabs)
         MOD_BUS.addListener<DataPackRegistryEvent.NewRegistry> { event ->
             // Same codec for the network so clients receive genes/races and can express + render locally.
             event.dataPackRegistry(GeneRegistry.KEY, GeneDefinition.CODEC, GeneDefinition.CODEC)
@@ -37,6 +37,7 @@ object RejectHumanity {
 
         RHDataSerializers.register()
         RHItems.register()
+        RHCreativeTabs.register()
         RHEntities.register()
     }
 

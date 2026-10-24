@@ -68,8 +68,12 @@ data class ScaleRule(val gene: ResourceLocation?, val range: FloatRange, val fac
 
 /**
  * Where a layer's color comes from: a fixed [color], or [gene] looked up in a named [palette].
- * [source] "secondary" reads the non-dominant allele; with [distinct], a homozygous secondary picks a different
- * palette entry (stable per individual). [darken] 0..1 shades the result.
+ * - [palette] may contain `{namespace:gene}` placeholders, so another gene can choose the palette
+ *   (e.g. `"skin_{rejecthumanity:skin_undertone}"`)
+ * - [source] "secondary" reads the non-dominant allele; with [distinct], a homozygous secondary picks a different
+ *   palette entry (stable per individual)
+ * - [source] "random" needs no gene: it picks a palette entry per individual (cosmetic choices such as hair dye)
+ * - [darken] 0..1 shades the result
  */
 data class Tint(
     val color: Int?,
@@ -85,8 +89,10 @@ data class Tint(
     }
 
     private fun fromGene(phenotype: Phenotype, palettes: Map<String, Palette>, seed: Long): Int? {
+        val name = fillPlaceholders(palette ?: return null, phenotype, seed)?.first ?: return null
+        val pal = palettes[name] ?: return null
+        if (source == "random") return randomEntry(pal, seed xor name.hashCode().toLong())
         val trait = phenotype[gene ?: return null] ?: return null
-        val pal = palettes[palette ?: return null] ?: return null
         return when (trait) {
             is Trait.Value -> (pal as? Palette.Gradient)?.sample(trait.normalized)
             is Trait.Variant -> {
@@ -99,6 +105,12 @@ data class Tint(
                 colors[key]
             }
         }
+    }
+
+    private fun randomEntry(palette: Palette, seed: Long): Int? = when (palette) {
+        is Palette.Mapped -> palette.colors.keys.sorted().takeIf { it.isNotEmpty() }
+            ?.let { keys -> palette.colors[keys[Math.floorMod(seed, keys.size.toLong()).toInt()]] }
+        is Palette.Gradient -> palette.sample(Math.floorMod(seed, 1000L) / 999f)
     }
 
     companion object {
@@ -132,25 +144,13 @@ data class Layer(
     val adultOnly: Boolean,
 ) {
     fun resolveTexture(phenotype: Phenotype, seed: Long): ResourceLocation? {
-        var drawable = true
-        val path = PLACEHOLDER.replace(texture) { match ->
-            val key = match.groupValues[1]
-            if (key.startsWith("random:")) {
-                val count = key.removePrefix("random:").toIntOrNull()?.coerceAtLeast(1) ?: 1
-                Math.floorMod(seed xor texture.hashCode().toLong(), count.toLong()).toString()
-            } else {
-                val value = ResourceLocation.tryParse(key)?.let(phenotype::variant)?.primary
-                if (value == null || value in skipValues) drawable = false
-                value.orEmpty()
-            }
-        }
-        return if (drawable) ResourceLocation.tryParse(path) else null
+        val (path, values) = fillPlaceholders(texture, phenotype, seed) ?: return null
+        if (values.any { it in skipValues }) return null
+        return ResourceLocation.tryParse(path)
     }
 
     companion object {
-        private val PLACEHOLDER = Regex("\\{([^}]+)}")
-
-        val CODEC: Codec<Layer> = RecordCodecBuilder.create { i ->
+        val CODEC: Codec<Layer> =RecordCodecBuilder.create { i ->
             i.group(
                 Codec.STRING.fieldOf("texture").forGetter(Layer::texture),
                 Tint.CODEC.nullableFieldOf("tint", Layer::tint),
@@ -173,6 +173,8 @@ data class Layer(
  * - [rotate] is an angle in degrees added to the bind pose on [rotateAxes], e.g. from a size gene
  * - [jiggle] is a bounce amplitude in degrees on [rotateAxes] (a number, or a gene rule so it grows with e.g. size),
  *   driven by the entity's spring physics; [jiggleChannel] picks which spring, so paired parts move independently
+ * - [state] limits the rule to a moment in the entity's life: "aggressive", "moving", "idle", "baby" or "sleeping"
+ *   (put it after the rules it should override, e.g. ears pinned back while fighting)
  */
 data class BoneRule(
     val bones: List<String>,
@@ -183,6 +185,7 @@ data class BoneRule(
     val rotateAxes: String,
     val jiggle: ScaleRule?,
     val jiggleChannel: Int,
+    val state: String?,
 ) {
     companion object {
         private val NAMES: Codec<List<String>> = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
@@ -206,8 +209,9 @@ data class BoneRule(
                 Codec.STRING.optionalFieldOf("rotate_axes", "x").forGetter(BoneRule::rotateAxes),
                 AMOUNT.nullableFieldOf("jiggle", BoneRule::jiggle),
                 Codec.INT.optionalFieldOf("jiggle_channel", 0).forGetter(BoneRule::jiggleChannel),
-            ).apply(i) { bones, visibleIf, scale, axes, rotate, rotateAxes, jiggle, jiggleChannel ->
-                BoneRule(bones, visibleIf.orNull(), scale.orNull(), axes, rotate.orNull(), rotateAxes, jiggle.orNull(), jiggleChannel)
+                Codec.STRING.nullableFieldOf("state", BoneRule::state),
+            ).apply(i) { bones, visibleIf, scale, axes, rotate, rotateAxes, jiggle, jiggleChannel, state ->
+                BoneRule(bones, visibleIf.orNull(), scale.orNull(), axes, rotate.orNull(), rotateAxes, jiggle.orNull(), jiggleChannel, state.orNull())
             }
         }
     }
@@ -263,6 +267,30 @@ data class Appearance(
             ).apply(i, ::Appearance)
         }
     }
+}
+
+private val PLACEHOLDER = Regex("\\{([^}]+)}")
+
+/**
+ * Fills `{namespace:gene}` with the gene's expressed variant and `{random:N}` with a per-individual number 0..N-1
+ * (salted by [text], so different layers roll independently). Returns the filled text plus every substituted value,
+ * or null when a referenced gene isn't expressed.
+ */
+fun fillPlaceholders(text: String, phenotype: Phenotype, seed: Long): Pair<String, List<String>>? {
+    val values = mutableListOf<String>()
+    var missing = false
+    val filled = PLACEHOLDER.replace(text) { match ->
+        val key = match.groupValues[1]
+        val value = if (key.startsWith("random:")) {
+            val count = key.removePrefix("random:").toIntOrNull()?.coerceAtLeast(1) ?: 1
+            Math.floorMod(seed xor text.hashCode().toLong(), count.toLong()).toString()
+        } else {
+            ResourceLocation.tryParse(key)?.let(phenotype::variant)?.primary
+        }
+        if (value == null) missing = true
+        value.orEmpty().also(values::add)
+    }
+    return if (missing) null else filled to values
 }
 
 fun lerpRgb(from: Int, to: Int, t: Float): Int {

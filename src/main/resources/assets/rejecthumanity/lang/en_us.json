@@ -1,5 +1,10 @@
 {
   "entity.rejecthumanity.elf": "Elf",
   "item.rejecthumanity.elf_spawn_egg": "Elf Spawn Egg",
-  "item.rejecthumanity.generic": "Generic Item"
+  "item.rejecthumanity.generic": "Generic Item",
+  "entity.rejecthumanity.drow": "Drow",
+  "item.rejecthumanity.drow_spawn_egg": "Drow Spawn Egg",
+  "entity.rejecthumanity.werewolf": "Werewolf",
+  "item.rejecthumanity.werewolf_spawn_egg": "Werewolf Spawn Egg",
+  "itemGroup.rejecthumanity": "Reject Humanity"
 }

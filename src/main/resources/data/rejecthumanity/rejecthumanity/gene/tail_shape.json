@@ -1,0 +1,18 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.01,
+  "defaults": [
+    {
+      "id": "straight",
+      "weight": 3
+    },
+    {
+      "id": "bushy",
+      "weight": 3
+    },
+    {
+      "id": "curled",
+      "weight": 1
+    }
+  ]
+}

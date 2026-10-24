@@ -1,0 +1,11 @@
+{
+  "type": "discrete",
+  "mutation_chance": 0.02,
+  "defaults": [
+    { "id": "none", "weight": 4 },
+    { "id": "high", "weight": 2 },
+    { "id": "low", "weight": 2 },
+    { "id": "braid", "weight": 2 },
+    { "id": "twin", "weight": 1 }
+  ]
+}

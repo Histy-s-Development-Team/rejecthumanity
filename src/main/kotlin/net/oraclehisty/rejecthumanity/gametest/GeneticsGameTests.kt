@@ -9,8 +9,10 @@ import net.minecraft.world.entity.ai.attributes.Attributes
 import net.neoforged.neoforge.gametest.GameTestHolder
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate
 import net.oraclehisty.rejecthumanity.RejectHumanity
+import net.oraclehisty.rejecthumanity.entities.DrowEntity
 import net.oraclehisty.rejecthumanity.entities.ElfEntity
 import net.oraclehisty.rejecthumanity.entities.RHEntities
+import net.oraclehisty.rejecthumanity.entities.WerewolfEntity
 import net.oraclehisty.rejecthumanity.genetics.Allele
 import net.oraclehisty.rejecthumanity.genetics.GeneRegistry
 import net.oraclehisty.rejecthumanity.genetics.Genome
@@ -28,6 +30,7 @@ object GeneticsGameTests {
     private val EYE = "eye_color".id()
     private val SKIN = "skin_tone".id()
     private val FACIAL_HAIR = "facial_hair".id()
+    private val UNDERTONE = "skin_undertone".id()
 
     private fun x(id: String) = Allele.Discrete(id)
 
@@ -36,8 +39,10 @@ object GeneticsGameTests {
     fun datapackLoads(helper: GameTestHelper) {
         val access = helper.level.registryAccess()
         val genes = access.registry(GeneRegistry.KEY).map { it.size() }.orElse(0)
-        helper.assertTrue(genes >= 19, "Expected the 19 built-in genes, found $genes")
+        helper.assertTrue(genes >= 32, "Expected the 32 built-in genes, found $genes")
         helper.assertTrue(RaceRegistry.get(access, ElfEntity.RACE) != null, "Elf race did not load")
+        helper.assertTrue(RaceRegistry.get(access, DrowEntity.RACE) != null, "Drow race did not load")
+        helper.assertTrue(RaceRegistry.get(access, WerewolfEntity.RACE) != null, "Werewolf race did not load")
         helper.succeed()
     }
 
@@ -50,6 +55,18 @@ object GeneticsGameTests {
             helper.assertTrue(elf.phenotype.variant(SEX) != null, "Sex not expressed")
             val scale = elf.getAttributeValue(Attributes.SCALE)
             helper.assertTrue(scale in 0.85..1.11, "Scale $scale outside the race's range")
+        }
+    }
+
+    @GameTest(template = "floor")
+    @JvmStatic
+    fun werewolfGetsCoatGenes(helper: GameTestHelper) {
+        val wolf = helper.spawn(RHEntities.WEREWOLF, BlockPos(2, 1, 2))
+        helper.succeedWhen {
+            for (gene in listOf("coat_pigment", "coat_pattern", "ear_shape", "ear_size", "ear_set", "ear_carriage", "tail_shape", "muzzle_length")) {
+                helper.assertTrue(wolf.phenotype[gene.id()] != null, "Werewolf is missing $gene")
+            }
+            helper.assertTrue(wolf.phenotype["skin_tone".id()] == null, "Werewolves should not carry elf skin genes")
         }
     }
 
@@ -101,6 +118,42 @@ object GeneticsGameTests {
             helper.assertTrue(kin.target == null, "Elf accepted a same-faction target")
             helper.succeed()
         }
+    }
+
+    @GameTest(template = "floor", batch = "faction_split")
+    @JvmStatic
+    fun factionsOnlyRallyTheirOwn(helper: GameTestHelper) {
+        val drow = helper.spawn(RHEntities.DROW, BlockPos(2, 1, 2))
+        val drowAlly = helper.spawn(RHEntities.DROW, BlockPos(3, 1, 3))
+        val elf = helper.spawn(RHEntities.ELF, BlockPos(1, 1, 3))
+        val attacker = helper.spawn(EntityType.ZOMBIE, BlockPos(1, 1, 1))
+        attacker.isNoAi = true
+        helper.runAfterDelay(5) { drow.hurt(helper.level.damageSources().mobAttack(attacker), 1f) }
+        helper.runAfterDelay(45) {
+            helper.assertTrue(drowAlly.target === attacker, "Drow did not rally its own faction")
+            helper.assertTrue(elf.target == null, "Elf was rallied by a Drow")
+            helper.succeed()
+        }
+    }
+
+    @GameTest(template = "floor")
+    @JvmStatic
+    fun undertoneChoosesSkinPalette(helper: GameTestHelper) {
+        val access = helper.level.registryAccess()
+        val lookup = GeneRegistry.lookup(access)
+        val drow = RaceRegistry.get(access, DrowEntity.RACE)!!
+        val base = Genome.random(drow.genes, lookup, helper.level.random)
+            .with(ALBINISM, Genotype(x("normal"), x("normal")))
+            .with(SKIN, Genotype(Allele.Continuous(0f), Allele.Continuous(0f)))
+        val appearance = drow.appearance
+        fun skin(undertone: String) = appearance.tint(
+            appearance.base.tint, base.with(UNDERTONE, Genotype(x(undertone), x(undertone))).express(lookup), 0L,
+        )
+        helper.assertTrue(skin("blue") == 0x465A94, "Blue undertone gave #%06X".format(skin("blue")))
+        helper.assertTrue(skin("natural") == 0xA5683A, "Natural undertone gave #%06X".format(skin("natural")))
+        val albino = base.with(ALBINISM, Genotype(x("albino"), x("albino"))).with(UNDERTONE, Genotype(x("blue"), x("blue")))
+        helper.assertTrue(appearance.tint(appearance.base.tint, albino.express(lookup), 0L) == 0xF2E8EC, "Albino Drow should be pale")
+        helper.succeed()
     }
 
     @GameTest(template = "floor")

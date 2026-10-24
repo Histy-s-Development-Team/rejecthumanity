@@ -16,6 +16,17 @@ object RHEntities: SingletonRegister<EntityType<*>>(BuiltInRegistries.ENTITY_TYP
         sized(0.6f, 1.8f).eyeHeight(1.62f).clientTrackingRange(10)
     }
 
+    val DROW by create("drow", ::DrowEntity, MobCategory.CREATURE) {
+        sized(0.6f, 1.8f).eyeHeight(1.62f).clientTrackingRange(10)
+    }
+
+    val WEREWOLF by create("werewolf", ::WerewolfEntity, MobCategory.CREATURE) {
+        sized(0.7f, 2.2f).eyeHeight(1.95f).clientTrackingRange(10)
+    }
+
+    /** Every race entity; attributes and spawn rules are shared. */
+    private val RACES get() = listOf<EntityType<out RHRaceEntity>>(ELF, DROW, WEREWOLF)
+
     fun <E : Entity> create(
         id: String,
         factory: EntityType.EntityFactory<E>,
@@ -26,14 +37,16 @@ object RHEntities: SingletonRegister<EntityType<*>>(BuiltInRegistries.ENTITY_TYP
     }
 
     fun registerAttributes(event: EntityAttributeCreationEvent) {
-        event.put(ELF, RHRaceEntity.createAttributes().build())
+        RACES.forEach { event.put(it, RHRaceEntity.createAttributes().build()) }
     }
 
     fun registerSpawnPlacements(event: RegisterSpawnPlacementsEvent) {
-        event.register(
-            ELF, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-            { type, level, spawnType, pos, random -> Animal.checkAnimalSpawnRules(type, level, spawnType, pos, random) },
-            RegisterSpawnPlacementsEvent.Operation.REPLACE,
-        )
+        for (race in RACES) {
+            event.register(
+                race, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                { type, level, spawnType, pos, random -> Animal.checkAnimalSpawnRules(type, level, spawnType, pos, random) },
+                RegisterSpawnPlacementsEvent.Operation.REPLACE,
+            )
+        }
     }
 }
