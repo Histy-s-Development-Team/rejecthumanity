@@ -37,8 +37,9 @@
   "mating": {
     "differ_on": "rejecthumanity:sex"
   },
+  "temperament": "neutral",
   "appearance": {
-    "model": "rejecthumanity:genericelf",
+    "model": "rejecthumanity:elf",
     "palettes": {
       "skin": [
         "#FFF4F0",
@@ -134,14 +135,16 @@
         }
       },
       {
-        "texture": "rejecthumanity:textures/entity/elf/eye_whites.png"
+        "texture": "rejecthumanity:textures/entity/elf/eye_whites.png",
+        "hide_on_blink": true
       },
       {
         "texture": "rejecthumanity:textures/entity/elf/eye_left.png",
         "tint": {
           "gene": "rejecthumanity:eye_color",
           "palette": "eyes"
-        }
+        },
+        "hide_on_blink": true
       },
       {
         "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
@@ -152,7 +155,8 @@
         "tint": {
           "gene": "rejecthumanity:eye_color",
           "palette": "eyes"
-        }
+        },
+        "hide_on_blink": true
       },
       {
         "texture": "rejecthumanity:textures/entity/elf/eye_right.png",
@@ -165,6 +169,19 @@
           "palette": "eyes",
           "source": "secondary",
           "distinct": true
+        },
+        "hide_on_blink": true
+      },
+      {
+        "texture": "rejecthumanity:textures/entity/elf/eyelashes.png",
+        "when": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
+        },
+        "tint": {
+          "gene": "rejecthumanity:hair_pigment",
+          "palette": "hair",
+          "darken": 0.45
         }
       },
       {
@@ -196,7 +213,8 @@
         "tint": {
           "gene": "rejecthumanity:hair_pigment",
           "palette": "hair"
-        }
+        },
+        "adult_only": true
       },
       {
         "texture": "rejecthumanity:textures/entity/elf/hair/{rejecthumanity:hair_style}.png",
@@ -208,31 +226,54 @@
     ],
     "bones": [
       {
-        "bone": "Regular Elf Ears",
+        "bone": "EarsRegular",
         "visible_if": {
           "gene": "rejecthumanity:ear_type",
           "is": "regular"
-        },
-        "scale": {
-          "gene": "rejecthumanity:ear_length",
-          "range": [
-            0.8,
-            1.4
-          ]
         }
       },
       {
-        "bone": "Blocky Elf Ears",
+        "bone": "EarsBlocky",
         "visible_if": {
           "gene": "rejecthumanity:ear_type",
           "is": "blocky"
-        },
+        }
+      },
+      {
+        "bone": [
+          "RightEar",
+          "LeftEar",
+          "RightEarBlocky",
+          "LeftEarBlocky"
+        ],
         "scale": {
           "gene": "rejecthumanity:ear_length",
           "range": [
-            0.8,
-            1.4
+            0.75,
+            1.5
           ]
+        },
+        "axes": "x"
+      },
+      {
+        "bone": [
+          "RightArmWide",
+          "LeftArmWide"
+        ],
+        "visible_if": {
+          "gene": "rejecthumanity:sex",
+          "is": "y"
+        }
+      },
+      {
+        "bone": [
+          "RightArmSlim",
+          "LeftArmSlim",
+          "Chest"
+        ],
+        "visible_if": {
+          "gene": "rejecthumanity:sex",
+          "is": "x"
         }
       }
     ],
@@ -251,6 +292,9 @@
         },
         "factor": 0.95
       }
-    ]
+    ],
+    "baby": {
+      "model": "rejecthumanity:elf_baby"
+    }
   }
 }

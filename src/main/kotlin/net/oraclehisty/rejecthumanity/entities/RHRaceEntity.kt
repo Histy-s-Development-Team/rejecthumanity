@@ -8,7 +8,9 @@ import net.minecraft.resources.ResourceKey
 import net.minecraft.server.level.ServerLevel
 import net.minecraft.world.DifficultyInstance
 import net.minecraft.world.entity.AgeableMob
+import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
+import net.minecraft.world.entity.LivingEntity
 import net.minecraft.world.entity.MobSpawnType
 import net.minecraft.world.entity.SpawnGroupData
 import net.minecraft.world.entity.ai.attributes.AttributeModifier
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal
 import net.minecraft.world.entity.ai.goal.TemptGoal
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal
+import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal
 import net.minecraft.world.entity.animal.Animal
 import net.minecraft.world.entity.player.Player
 import net.minecraft.world.item.ItemStack
@@ -40,10 +43,12 @@ import net.oraclehisty.rejecthumanity.helpers.id
 import net.oraclehisty.rejecthumanity.race.Appearance
 import net.oraclehisty.rejecthumanity.race.RaceDefinition
 import net.oraclehisty.rejecthumanity.race.RaceRegistry
+import net.oraclehisty.rejecthumanity.race.Temperament
 import software.bernie.geckolib.animatable.GeoEntity
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache
 import software.bernie.geckolib.animation.AnimatableManager
 import software.bernie.geckolib.animation.AnimationController
+import software.bernie.geckolib.animation.PlayState
 import software.bernie.geckolib.animation.RawAnimation
 import software.bernie.geckolib.util.GeckoLibUtil
 
@@ -143,10 +148,26 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
 
     // --- AI -------------------------------------------------------------------------------------
 
+    /** From the race file; [Temperament.NEUTRAL] when the race isn't loaded. */
+    val temperament: Temperament get() = race?.temperament ?: Temperament.NEUTRAL
+
+    private val fightsBack get() = !isBaby && temperament != Temperament.PASSIVE
+
+    fun sharesFaction(other: Entity?) = other is RHRaceEntity && other.faction == faction
+
+    // Same-faction members are allies: vanilla targeting checks both of these, so no goal can pick a faction member.
+    override fun isAlliedTo(other: Entity) = sharesFaction(other) || super.isAlliedTo(other)
+
+    override fun canAttack(target: LivingEntity) = !sharesFaction(target) && super.canAttack(target)
+
+    // Last line of defence for anything that sets a target directly (other mods, commands).
+    override fun setTarget(target: LivingEntity?) = super.setTarget(target?.takeUnless(::sharesFaction))
+
+    // Every race gets the same goals; temperament decides which of them may run.
     override fun registerGoals() {
         goalSelector.addGoal(0, FloatGoal(this))
         goalSelector.addGoal(1, object : PanicGoal(this, 1.4) {
-            override fun shouldPanic() = isBaby && super.shouldPanic()
+            override fun shouldPanic() = !fightsBack && super.shouldPanic()
         })
         goalSelector.addGoal(2, MeleeAttackGoal(this, 1.2, true))
         goalSelector.addGoal(3, BreedGoal(this, 1.0))
@@ -156,27 +177,39 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
         goalSelector.addGoal(7, LookAtPlayerGoal(this, Player::class.java, 6f))
         goalSelector.addGoal(8, RandomLookAroundGoal(this))
         targetSelector.addGoal(1, FactionHurtByTargetGoal(this).setAlertOthers())
+        targetSelector.addGoal(2, object : NearestAttackableTargetGoal<Player>(this, Player::class.java, true) {
+            override fun canUse() = !isBaby && temperament == Temperament.HOSTILE && super.canUse()
+        })
     }
 
-    /** Like vanilla's "alert same type", but rallies anyone of the same faction instead of the same class. */
+    /** Like vanilla's "alert same type", but rallies faction members that are willing to fight, instead of the same class. */
     private class FactionHurtByTargetGoal(private val owner: RHRaceEntity) : HurtByTargetGoal(owner) {
+        override fun canUse() = owner.fightsBack && !owner.sharesFaction(owner.lastHurtByMob) && super.canUse()
+
         override fun alertOthers() {
             val attacker = owner.lastHurtByMob ?: return
             val range = followDistance
             val area = AABB.unitCubeFromLowerCorner(owner.position()).inflate(range, 10.0, range)
             owner.level().getEntitiesOfClass(RHRaceEntity::class.java, area) {
-                it !== owner && it.faction == owner.faction && it.target == null && !it.isBaby && !it.isAlliedTo(attacker)
+                it !== owner && it.faction == owner.faction && it.target == null && it.fightsBack && !it.isAlliedTo(attacker)
             }.forEach { alertOther(it, attacker) }
         }
     }
 
     // --- GeckoLib -------------------------------------------------------------------------------
 
+    // Locomotion (walk, arm swing, attack, riding, head look) is procedural in RaceGeoModel, mirroring vanilla's
+    // HumanoidModel. Keyframed animations are for expressive one-offs layered on top, like the ear twitch.
     override fun registerControllers(registrar: AnimatableManager.ControllerRegistrar) {
-        registrar.add(AnimationController(this, "main", 5) { state ->
-            state.setAndContinue(if (state.isMoving) WALK else IDLE)
-        })
-        registrar.add(AnimationController(this, "blink", 0) { state -> state.setAndContinue(BLINK) })
+        registrar.add(
+            AnimationController(this, "ears", 2) { PlayState.STOP }
+                .triggerableAnim(EAR_TWITCH, RawAnimation.begin().thenPlay(EAR_TWITCH))
+        )
+    }
+
+    override fun aiStep() {
+        super.aiStep()
+        if (!level().isClientSide && isAlive && random.nextInt(EAR_TWITCH_CHANCE) == 0) triggerAnim("ears", EAR_TWITCH)
     }
 
     override fun getAnimatableInstanceCache(): AnimatableInstanceCache = geoCache
@@ -186,9 +219,8 @@ abstract class RHRaceEntity(type: EntityType<out RHRaceEntity>, level: Level) : 
         private const val GENOME_TAG = "Genome"
         private val SCALE_MODIFIER = "genetic_height".id()
 
-        private val IDLE: RawAnimation = RawAnimation.begin().thenLoop("idle")
-        private val WALK: RawAnimation = RawAnimation.begin().thenLoop("walk")
-        private val BLINK: RawAnimation = RawAnimation.begin().thenLoop("Blink")
+        private const val EAR_TWITCH = "ear_twitch"
+        private const val EAR_TWITCH_CHANCE = 160
 
         fun createAttributes(): AttributeSupplier.Builder = createMobAttributes()
             .add(Attributes.MAX_HEALTH, 20.0)

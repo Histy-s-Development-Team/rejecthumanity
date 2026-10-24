@@ -114,7 +114,8 @@ data class Tint(
 /**
  * One texture drawn over the model. [texture] may contain `{namespace:gene}` (replaced by the gene's expressed
  * variant) and `{random:N}` (a per-individual number 0..N-1). Layers with a missing gene or a value in
- * [skipValues] are not drawn.
+ * [skipValues] are not drawn. [hideOnBlink] layers (eyes) disappear for a few ticks every few seconds;
+ * [adultOnly] layers (e.g. beards) are not drawn on babies.
  */
 data class Layer(
     val texture: String,
@@ -123,6 +124,8 @@ data class Layer(
     val emissive: Boolean,
     val whenCondition: Condition?,
     val skipValues: List<String>,
+    val hideOnBlink: Boolean,
+    val adultOnly: Boolean,
 ) {
     fun resolveTexture(phenotype: Phenotype, seed: Long): ResourceLocation? {
         var drawable = true
@@ -151,20 +154,49 @@ data class Layer(
                 Codec.BOOL.optionalFieldOf("emissive", false).forGetter(Layer::emissive),
                 Condition.CODEC.nullableFieldOf("when", Layer::whenCondition),
                 Codec.STRING.listOf().optionalFieldOf("skip_values", emptyList()).forGetter(Layer::skipValues),
-            ).apply(i) { texture, tint, alpha, emissive, whenCondition, skipValues -> Layer(texture, tint.orNull(), alpha.orNull(), emissive, whenCondition.orNull(), skipValues) }
+                Codec.BOOL.optionalFieldOf("hide_on_blink", false).forGetter(Layer::hideOnBlink),
+                Codec.BOOL.optionalFieldOf("adult_only", false).forGetter(Layer::adultOnly),
+            ).apply(i) { texture, tint, alpha, emissive, whenCondition, skipValues, hideOnBlink, adultOnly ->
+                Layer(texture, tint.orNull(), alpha.orNull(), emissive, whenCondition.orNull(), skipValues, hideOnBlink, adultOnly)
+            }
         }
     }
 }
 
-/** Shows/hides and scales a named model bone. */
-data class BoneRule(val bone: String, val visibleIf: Condition?, val scale: ScaleRule?) {
+/**
+ * Shows/hides and scales model bones. `"bone"` is one name or a list. [axes] picks which of x/y/z the scale
+ * applies to, so a gene can e.g. lengthen ears outward without thickening them.
+ */
+data class BoneRule(val bones: List<String>, val visibleIf: Condition?, val scale: ScaleRule?, val axes: String) {
     companion object {
+        private val NAMES: Codec<List<String>> = Codec.either(Codec.STRING, Codec.STRING.listOf()).xmap(
+            { either -> either.map({ listOf(it) }, { it }) },
+            { names -> if (names.size == 1) Either.left<String, List<String>>(names[0]) else Either.right<String, List<String>>(names) },
+        )
+
         val CODEC: Codec<BoneRule> = RecordCodecBuilder.create { i ->
             i.group(
-                Codec.STRING.fieldOf("bone").forGetter(BoneRule::bone),
+                NAMES.fieldOf("bone").forGetter(BoneRule::bones),
                 Condition.CODEC.nullableFieldOf("visible_if", BoneRule::visibleIf),
                 ScaleRule.CODEC.nullableFieldOf("scale", BoneRule::scale),
-            ).apply(i) { bone, visibleIf, scale -> BoneRule(bone, visibleIf.orNull(), scale.orNull()) }
+                Codec.STRING.optionalFieldOf("axes", "xyz").forGetter(BoneRule::axes),
+            ).apply(i) { bones, visibleIf, scale, axes -> BoneRule(bones, visibleIf.orNull(), scale.orNull(), axes) }
+        }
+    }
+}
+
+/**
+ * What changes while an individual is a baby: an optional separate [model] (same bone names, so animations and
+ * adult bone rules still apply where the bones exist) and extra [bones] rules applied after the adult ones.
+ */
+data class BabyAppearance(val model: ResourceLocation?, val bones: List<BoneRule>) {
+    companion object {
+        val NONE = BabyAppearance(null, emptyList())
+        val CODEC: Codec<BabyAppearance> = RecordCodecBuilder.create { i ->
+            i.group(
+                ResourceLocation.CODEC.nullableFieldOf("model", BabyAppearance::model),
+                BoneRule.CODEC.listOf().optionalFieldOf("bones", emptyList()).forGetter(BabyAppearance::bones),
+            ).apply(i) { model, bones -> BabyAppearance(model.orNull(), bones) }
         }
     }
 }
@@ -180,7 +212,12 @@ data class Appearance(
     val bones: List<BoneRule>,
     val scale: List<ScaleRule>,
     val palettes: Map<String, Palette>,
+    val baby: BabyAppearance,
 ) {
+    fun modelFor(isBaby: Boolean) = if (isBaby) baby.model ?: model else model
+
+    fun bonesFor(isBaby: Boolean) = if (isBaby) bones + baby.bones else bones
+
     fun scaleFor(phenotype: Phenotype) = scale.fold(1f) { acc, rule -> acc * rule.evaluate(phenotype) }
 
     fun tint(tint: Tint?, phenotype: Phenotype, seed: Long) = tint?.resolve(phenotype, palettes, seed) ?: 0xFFFFFF
@@ -194,6 +231,7 @@ data class Appearance(
                 BoneRule.CODEC.listOf().optionalFieldOf("bones", emptyList()).forGetter(Appearance::bones),
                 ScaleRule.CODEC.listOf().optionalFieldOf("scale", emptyList()).forGetter(Appearance::scale),
                 Codec.unboundedMap(Codec.STRING, Palette.CODEC).optionalFieldOf("palettes", emptyMap()).forGetter(Appearance::palettes),
+                BabyAppearance.CODEC.optionalFieldOf("baby", BabyAppearance.NONE).forGetter(Appearance::baby),
             ).apply(i, ::Appearance)
         }
     }

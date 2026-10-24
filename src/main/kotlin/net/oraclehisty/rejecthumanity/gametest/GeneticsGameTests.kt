@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos
 import net.minecraft.gametest.framework.GameTest
 import net.minecraft.gametest.framework.GameTestHelper
 import net.minecraft.nbt.CompoundTag
+import net.minecraft.world.entity.EntityType
 import net.minecraft.world.entity.ai.attributes.Attributes
 import net.neoforged.neoforge.gametest.GameTestHolder
 import net.neoforged.neoforge.gametest.PrefixGameTestTemplate
@@ -16,6 +17,7 @@ import net.oraclehisty.rejecthumanity.genetics.Genome
 import net.oraclehisty.rejecthumanity.genetics.Genotype
 import net.oraclehisty.rejecthumanity.helpers.id
 import net.oraclehisty.rejecthumanity.race.RaceRegistry
+import net.oraclehisty.rejecthumanity.race.Temperament
 
 /** Run with `./gradlew runGameTestServer`. Only active when the rejecthumanity gametest namespace is enabled (dev runs). */
 @GameTestHolder(RejectHumanity.ID)
@@ -61,6 +63,43 @@ object GeneticsGameTests {
             val copy = RHEntities.ELF.create(helper.level)!!
             copy.load(tag)
             helper.assertTrue(copy.genome == elf.genome, "Loaded genome differs from saved one")
+        }
+    }
+
+    // Rallying reaches ~24 blocks, across neighbouring test areas, so each faction test runs in its own batch.
+    @GameTest(template = "floor", batch = "faction_rally")
+    @JvmStatic
+    fun neutralElvesDefendTogether(helper: GameTestHelper) {
+        helper.assertTrue(
+            RaceRegistry.get(helper.level.registryAccess(), ElfEntity.RACE)?.temperament == Temperament.NEUTRAL,
+            "Elves should be neutral",
+        )
+        val elf = helper.spawn(RHEntities.ELF, BlockPos(2, 1, 2))
+        val bystander = helper.spawn(RHEntities.ELF, BlockPos(3, 1, 3))
+        val attacker = helper.spawn(EntityType.ZOMBIE, BlockPos(1, 1, 1))
+        attacker.isNoAi = true
+        helper.runAfterDelay(5) {
+            elf.hurt(helper.level.damageSources().mobAttack(attacker), 1f)
+        }
+        helper.succeedWhen {
+            helper.assertTrue(elf.target === attacker, "Hurt neutral elf did not fight back")
+            helper.assertTrue(bystander.target === attacker, "Nearby elf was not rallied")
+        }
+    }
+
+    @GameTest(template = "floor", batch = "faction_kin")
+    @JvmStatic
+    fun elvesNeverTargetTheirOwnFaction(helper: GameTestHelper) {
+        val victim = helper.spawn(RHEntities.ELF, BlockPos(2, 1, 2))
+        val kin = helper.spawn(RHEntities.ELF, BlockPos(3, 1, 3))
+        helper.runAfterDelay(5) {
+            victim.hurt(helper.level.damageSources().mobAttack(kin), 1f)
+            kin.setTarget(victim)
+        }
+        helper.runAfterDelay(45) {
+            helper.assertTrue(victim.target == null, "Elf targeted ${victim.target} after being hit by its own faction")
+            helper.assertTrue(kin.target == null, "Elf accepted a same-faction target")
+            helper.succeed()
         }
     }
 

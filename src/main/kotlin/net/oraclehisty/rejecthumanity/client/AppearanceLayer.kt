@@ -31,7 +31,11 @@ class AppearanceLayer<T : RHRaceEntity>(renderer: GeoRenderer<T>) : GeoRenderLay
         val phenotype = animatable.phenotype
         val seed = animatable.appearanceSeed
 
+        val blinking = isBlinking(animatable, seed)
+
         for (layer in appearance.layers) {
+            if (layer.hideOnBlink && blinking) continue
+            if (layer.adultOnly && animatable.isBaby) continue
             if (layer.whenCondition != null && !layer.whenCondition.test(phenotype)) continue
             val texture = layer.resolveTexture(phenotype, seed)?.takeIf(::textureExists) ?: continue
             val alpha = layer.alpha?.evaluate(phenotype)?.coerceIn(0f, 1f) ?: 1f
@@ -53,6 +57,13 @@ class AppearanceLayer<T : RHRaceEntity>(renderer: GeoRenderer<T>) : GeoRenderLay
     }
 
     companion object {
+        /** Eyes close for 3 ticks every 4–6 seconds, offset per individual so a crowd doesn't blink in sync. Always closed when asleep. */
+        private fun isBlinking(entity: RHRaceEntity, seed: Long): Boolean {
+            if (entity.isSleeping) return true
+            val period = 80 + Math.floorMod(seed, 41L)
+            return Math.floorMod(entity.tickCount + seed, period) < 3
+        }
+
         // A datapack can point at art that doesn't exist; skip it instead of drawing the missing-texture checkerboard.
         private val existing = HashMap<ResourceLocation, Boolean>()
 
